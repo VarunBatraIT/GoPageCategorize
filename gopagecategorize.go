@@ -15,19 +15,20 @@ import (
 )
 
 var score = map[string]float32{
-	"h1":  0.13,
-	"h2":  0.11,
-	"h3":  0.07,
-	"h4":  0.05,
-	"h5":  0.03,
-	"h6":  0.02,
-	"em":  0.01,
-	"b":   0.01,
-	"i":   0.01,
-	"ins": 0.01,
-	"s":   0.01,
-	"a":   0.005,
-	"del": -0.01,
+	"title": 0.15,
+	"h1":    0.13,
+	"h2":    0.11,
+	"h3":    0.07,
+	"h4":    0.05,
+	"h5":    0.03,
+	"h6":    0.02,
+	"em":    0.01,
+	"b":     0.01,
+	"i":     0.01,
+	"ins":   0.01,
+	"s":     0.01,
+	"a":     0.005,
+	"del":   -0.01,
 }
 
 var userAgents = []string{
@@ -71,7 +72,7 @@ func (a ByScore) Len() int           { return len(a) }
 func (a ByScore) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByScore) Less(i, j int) bool { return a[i].score > a[j].score }
 
-func AnalyzeUrl(url string) []scoreBoardStruct {
+func AnalyzeUrl(url string) ([]scoreBoardStruct, error) {
 
 	var scoreBoard = make(map[string]float32)
 	var scoreSortableBoard []scoreBoardStruct
@@ -87,6 +88,7 @@ func AnalyzeUrl(url string) []scoreBoardStruct {
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(hr.body))
 	if err != nil {
 		log.Fatal(err)
+		return scoreSortableBoard, err
 	}
 	var text string
 	for tag, _ := range score {
@@ -110,8 +112,9 @@ func AnalyzeUrl(url string) []scoreBoardStruct {
 		scoreSortableBoard = append(scoreSortableBoard, scoreBoardStruct{sb_key, sb_value})
 	}
 	sort.Sort(ByScore(scoreSortableBoard))
-	return scoreSortableBoard
+	return scoreSortableBoard, nil
 }
+
 //Hits a page and return body if needed
 func hit(ht hitRequest) (hitResponse, error) {
 	client := &http.Client{
